@@ -14,7 +14,7 @@ import React, { useCallback, useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
-const Dashboard = () => {
+export default function Dashboard() {
   const [messages,setMessages]=useState<Message[]>([]);
   const[isLoading,setIsLoading]=useState(false);
   const [isSwitchingLoading,setIsSwichingLoading]=useState(false);
@@ -183,4 +183,3 @@ toast.error(
   )
 }
 
-export default Dashboard

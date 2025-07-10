@@ -14,7 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 
 
-const VerifyAccount = () => {
+export default function Dashboard() {
 const router=useRouter();
 const param=useParams<{username:string}>();
 
@@ -84,4 +84,3 @@ router.replace('/sign-in')
   )
 }
 
-export default VerifyAccount

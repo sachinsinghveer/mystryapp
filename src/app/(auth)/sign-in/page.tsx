@@ -14,7 +14,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
 
-const SignIn = () => {
+export default function SignIn() {
   const router = useRouter();
    const [isSubmitting,setIsSubmitting]=useState(false);
   const form = useForm<z.infer<typeof signInSchema>>({
@@ -114,4 +114,4 @@ if(result?.url){
   );
 };
 
-export default SignIn;
+
