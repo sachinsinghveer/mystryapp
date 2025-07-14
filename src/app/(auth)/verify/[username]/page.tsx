@@ -14,7 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 
 
-export default function Dashboard() {
+export default function VerifyPage() {
 const router=useRouter();
 const param=useParams<{username:string}>();
 
