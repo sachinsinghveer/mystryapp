@@ -39,7 +39,7 @@ router.replace('/sign-in')
 } catch (error) {
    console.error("Error in verifing of user",error)
      const axiosError=error as AxiosError<ApiResponse>;
-          let errorMessage=axiosError.response?.data.message
+          const errorMessage=axiosError.response?.data.message
      
   
   toast.error("Verification failed", {
