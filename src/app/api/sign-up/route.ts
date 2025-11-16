@@ -16,10 +16,7 @@ export async function POST(request: Request) {
 
     if (existingVerifiedUserByUsername) {
       return Response.json(
-        {
-          success: false,
-          message: 'Username is already taken',
-        },
+        { success: false, message: 'Username is already taken' },
         { status: 400 }
       );
     }
@@ -28,24 +25,24 @@ export async function POST(request: Request) {
     const verifyCode = Math.floor(100000 + Math.random() * 900000).toString();
 
     if (existingUserByEmail) {
-      console.log("This user exists by this email",existingUserByEmail);
+      console.log('Found existing user by email:', existingUserByEmail.email);
+
       if (existingUserByEmail.isVerified) {
         return Response.json(
-          {
-            success: false,
-            message: 'User already exists with this email',
-          },
+          { success: false, message: 'User already exists with this email' },
           { status: 400 }
         );
       } else {
+        // Update unverified user
         const hashedPassword = await bcrypt.hash(password, 10);
         existingUserByEmail.password = hashedPassword;
         existingUserByEmail.verifyCode = verifyCode;
-        existingUserByEmail.verifyCodeExpiry = new Date(Date.now() + 3600000);
-        console.log("updated user",existingUserByEmail);
+        existingUserByEmail.verifyCodeExpiry = new Date(Date.now() + 3600000); // 1 hour
         await existingUserByEmail.save();
+        console.log('Updated existing unverified user:', existingUserByEmail.email);
       }
     } else {
+      // Create new user
       const hashedPassword = await bcrypt.hash(password, 10);
       const expiryDate = new Date();
       expiryDate.setHours(expiryDate.getHours() + 1);
@@ -60,21 +57,28 @@ export async function POST(request: Request) {
         isAcceptingMessages: true,
         messages: [],
       });
-     console.log(newUser);
+
       await newUser.save();
+      console.log('Created new user:', email);
     }
 
-   // Send verification email
-    const emailResponse = await sendVerificationEmail(
-      email,
-      username,
-      verifyCode
-    );
-    if (!emailResponse.success) {
+    // ✅ Always send verification email after user is created or updated
+    try {
+      console.log('Sending verification email to:', email, 'with code:', verifyCode);
+      const emailResponse = await sendVerificationEmail(email, username, verifyCode);
+      console.log(emailResponse.message);
+      if (!emailResponse.success) {
+        return Response.json(
+          { success: false, message: emailResponse.message },
+          { status: 500 }
+        );
+      }
+    } catch (emailError) {
+      console.error('Error sending verification email:', emailError);
       return Response.json(
         {
           success: false,
-          message: emailResponse.message,
+          message: 'User created but failed to send verification email',
         },
         { status: 500 }
       );
@@ -90,10 +94,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error('Error registering user:', error);
     return Response.json(
-      {
-        success: false,
-        message: 'Error registering user',
-      },
+      { success: false, message: 'Error registering user' },
       { status: 500 }
     );
   }
