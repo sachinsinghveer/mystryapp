@@ -1,35 +1,45 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenAI } from "@google/genai";
+
+// The client gets the API key from the environment variable `GEMINI_API_KEY`.
+
+
+
 
 export async function POST(req: Request) {
   try {
-     console.log("Hit /api/suggest-messages");
-    const { message } = await req.json();
-    console.log("Message:", message);
-
-    if (!process.env.GEMINI_API_KEY) {
-      return Response.json({success:false,
-        message:"Gemini API key not configured"}, { status: 500 });
-    }
-
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    const { topic } = await req.json();
+    const ai = new GoogleGenAI({});
 
     const prompt = `
-Create a list of three open-ended and engaging questions formatted as a single string. Each question should be separated by '||'. These questions are for an anonymous social messaging platform, like Qooh.me, and should be suitable for a diverse audience. Avoid personal or sensitive topics, focusing instead on universal themes that encourage friendly interaction. For example, your output should be structured like this: 
-"What’s a hobby you’ve recently started?||If you could have dinner with any historical figure, who would it be?||What’s a simple thing that makes you happy?".
-Ensure the questions are intriguing, foster curiosity, and contribute to a positive and welcoming conversational environment.
-`;
+   Generate exactly 5 short anonymous feedback messages about: ${topic}.
 
-    const result = await model.generateContent(prompt);
-    const raw = result.response.text().trim();
+Return ONLY a JSON array of 5 strings.
+No explanations.
+No markdown.
+No numbering.
+Output valid JSON.
 
-    const questions = raw.split("||").map(q => q.trim()).filter(Boolean);
+    `;
 
-  return Response.json({success:true,
-        questions}, { status: 200 });
+    const result =await ai.models.generateContent({
+    model: "gemini-2.5-flash",
+    contents: prompt,
+  });
+  const text = result.text;
+ if(text===undefined){
+    throw new Error("No suggestions generated");
+ }
+  // const suggestions = text
+  // .split('\n')                // split on new lines
+  // .map(s => s.replace(/^\d+\.\s*/, ""))  // remove "1. ", "2. " etc.
+  // .filter(Boolean);           // remove empty lines
+  
+  //  console.log("Gemini Result:", suggestions);
+   
+    
+    return Response.json({ suggestions: text });
   } catch (err) {
-    console.error("Gemini API error:", err);
-     return Response.json({success:false,
-        message:"somthing went wrong"}, { status: 500 });
+    console.error("Gemini Error:", err);
+    return Response.json({ error: "Failed to generate suggestions" }, { status: 500 });
   }
 }

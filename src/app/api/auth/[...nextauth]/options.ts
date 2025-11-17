@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
+
 import { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import bcrypt from 'bcryptjs';
@@ -17,9 +17,10 @@ export const authOptions: NextAuthOptions = {
         email: { label: 'Email', type: 'text' },
         password: { label: 'Password', type: 'password' },
       },
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
         async authorize(credentials: any): Promise<any> {
         await dbConnect();
+        console.log("got connected to db");
         try {
           const user = await UserModel.findOne({
             $or: [
@@ -27,6 +28,7 @@ export const authOptions: NextAuthOptions = {
               { username: credentials.identifier },
             ],
           });
+          console.log("Found user:",user);
           if (!user) {
             throw new Error('No user found with this email');
           }

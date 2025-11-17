@@ -28,11 +28,13 @@ export default function SignIn() {
  
   const onSubmit = async (data: z.infer<typeof signInSchema>) => {
 setIsSubmitting(true);
+console.log("Submitting",data);
 const result=await signIn('credentials',{
   redirect:false,
   identifier:data.identifier,
   password:data.password
 })
+console.log("SignIn Result:",result);
 setIsSubmitting(false);
 if(result?.error){
   if(result.error=='CredentialsSignin'){
@@ -80,7 +82,7 @@ if(result?.url){
                 </FormItem>
               )}
             />
-
+            
             <FormField
               control={form.control}
               name="password"

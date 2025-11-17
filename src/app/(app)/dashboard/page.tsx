@@ -179,6 +179,7 @@ toast.error(
           <p>No messages to display.</p>
         )}
       </div>
+     
     </div>
   )
 }

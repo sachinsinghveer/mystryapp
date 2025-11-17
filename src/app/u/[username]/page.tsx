@@ -22,22 +22,26 @@ import { ApiResponse } from "@/types/ApiResponse";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { messageSchema } from "@/schemas/messageSchema";
+import SuggestMessages from "@/components/SuggestMessages";
+
 
 export default function SendMessage() {
   const params = useParams<{ username: string }>();
   const username = params?.username;
+  const [messageSent, setMessageSent] = useState("");
 
   const form = useForm<z.infer<typeof messageSchema>>({
     resolver: zodResolver(messageSchema),
     defaultValues: {
-      content: "",
+      content: messageSent,
     },
   });
 
-  const messageContent = form.watch("content");
+
   const [isLoading, setIsLoading] = useState(false);
 
   const onSubmit = async (data: z.infer<typeof messageSchema>) => {
+    console.log("Sending message to", username, ":", data);
     setIsLoading(true);
     try {
       const response = await axios.post<ApiResponse>("/api/send-message", {
@@ -73,9 +77,11 @@ export default function SendMessage() {
                 <FormLabel>Send Anonymous Message to @{username}</FormLabel>
                 <FormControl>
                   <Textarea
+                    {...field}
                     placeholder="Write your anonymous message here"
                     className="resize-none"
-                    {...field}
+                    value={messageSent}
+                   
                   />
                 </FormControl>
                 <FormMessage />
@@ -83,11 +89,12 @@ export default function SendMessage() {
             )}
           />
           <div className="flex justify-center">
-            <Button type="submit" disabled={isLoading || !messageContent}>
+            <Button type="submit" disabled={isLoading}>
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Please wait
-                </>
+               
+              </>
               ) : (
                 "Send It"
               )}
@@ -97,8 +104,14 @@ export default function SendMessage() {
       </Form>
 
       <Separator className="my-6" />
+     
+       <SuggestMessages setMessageSent={(msg:string)=>{
+        setMessageSent(msg);  
+        form.setValue("content", msg);
+       }} />
+       <Separator className="my-4" />
       <div className="text-center">
-        <div className="mb-4">Get Your Message Board</div>
+        <div className="mb-2">Get Your Message Board</div>
         <Link href="/sign-up">
           <Button>Create Your Account</Button>
         </Link>
